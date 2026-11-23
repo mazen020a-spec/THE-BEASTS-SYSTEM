@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تحدّي العقول أونلاين</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF1FF;--ink:#14213D;--card:#fff;--line:#C9D0F2;--y:#FFC93C;--c:#E8484E;--g:#17A56B;--mut:#5A6485;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101935;--ink:#EEF1FF;--card:#1B2750;--line:#34437A;--mut:#9AA6D6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101935;--ink:#EEF1FF;--card:#1B2750;--line:#34437A;--mut:#9AA6D6;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,sans-serif;line-height:1.6}
+#app{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:2.4rem;font-weight:900;margin:8px 0 0;letter-spacing:-.5px}
+h2{font-size:1rem;margin:22px 0 8px;color:var(--mut)}
+.sub{color:var(--mut);margin:0}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+button,input{font:inherit;color:inherit}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:8px 16px;cursor:pointer;font-weight:700}
+.chip.on{background:var(--y);border-color:var(--y);color:#14213D}
+input{width:100%;margin-top:8px;padding:10px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card)}
+.big{display:block;width:100%;margin-top:28px;padding:14px;border:0;border-radius:16px;background:var(--ink);color:var(--bg);font-size:1.2rem;font-weight:900;cursor:pointer}
+:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.board{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.pl{flex:1;min-width:80px;padding:6px 10px;border-radius:12px;border:2px solid var(--line);background:var(--card);font-size:.9rem}
+.pl.me{border-color:var(--y);background:var(--y);color:#14213D}
+.pl b{display:block;font-size:1.3rem;line-height:1.2}
+.card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:20px}
+.meta{color:var(--mut);font-size:.9rem;margin-bottom:8px}
+.q{font-size:1.5rem;font-weight:700;min-height:90px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.q span[dir=ltr]{font-size:2rem;font-weight:900}
+.grid{font-size:2rem;letter-spacing:4px;line-height:1.5;word-break:break-all}
+.bar{height:10px;background:var(--line);border-radius:9px;overflow:hidden;margin:14px 0}
+.bar i{display:block;height:100%;width:100%;background:var(--g);transition:width .1s linear}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{padding:14px 8px;border:2px solid var(--line);border-radius:14px;background:var(--bg);font-weight:700;font-size:1.1rem;cursor:pointer}
+.opt.ok{background:var(--g);border-color:var(--g);color:#fff}
+.opt.no{background:var(--c);border-color:var(--c);color:#fff}
+.fb{text-align:center;font-weight:900;font-size:1.2rem;margin-top:14px}
+.center{text-align:center;padding:40px 10px}
+.win{font-size:3rem;margin:0}
+.rank{display:flex;justify-content:space-between;padding:10px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin-top:8px;font-weight:700}
+.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);margin-top:10px}
+.acc{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin-top:8px}.acc small{color:var(--mut);display:block}.xp{height:6px;background:var(--line);border-radius:6px;margin-top:4px;overflow:hidden;min-width:150px}.xp i{display:block;height:100%;background:var(--y)}.err{color:var(--c);font-weight:700;margin-top:8px;min-height:1.4em}.two{display:flex;gap:8px;margin-top:6px}.two button{flex:1}.two input{margin:0;flex:2}.adm{flex-direction:column;align-items:stretch}.ctl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ctl select{padding:6px;border-radius:10px;border:2px solid var(--line);background:var(--card);font:inherit;color:inherit}.chip.sm{padding:4px 12px}
+.x{border:0;background:none;color:var(--c);font-weight:700;cursor:pointer}.big[disabled]{opacity:.4;cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[rnd(0,a.length-1)];
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ltr=s=>'<span dir="ltr">'+s+'</span>';
+const LB=['تصاعدي','سهل','متوسط','صعب','عبقري'];
+const TYPES=['arith','seq','odd','logic','count','mem'];
+const cfg={n:2,lvl:0,per:5,mode:1,gc:1,gn:[]},names=[];
+let S={};
+
+function numOpts(c,sp){const s=new Set([c]);let g=0;while(s.size<4&&g++<60){const v=c+rnd(-sp,sp);if(v!==c&&(v>0||c<=0))s.add(v)}while(s.size<4)s.add(c+s.size*7);const o=shuf([...s]).map(String);return{opts:o,ans:o.indexOf(String(c)),od:'ltr'}}
+const CATS={'فواكه':['تفاح','موز','برتقال','عنب','فراولة','مانجو'],'حيوانات':['أسد','فيل','حصان','قطة','ذئب','زرافة'],'ألوان':['أحمر','أزرق','أخضر','أصفر','بنفسجي'],'مركبات':['سيارة','طائرة','قطار','سفينة','دراجة'],'أدوات':['مطرقة','مفك','منشار','كماشة','مفتاح'],'خضار':['خيار','طماطم','جزر','بصل','بطاطس'],'طيور':['نسر','بطة','حمامة','عصفور','صقر']};
+const G={
+arith(d){let e,v;
+ if(d==1){const a=rnd(10,60),b=rnd(10,60);if(Math.random()<.5){e=a+' + '+b;v=a+b}else{e=Math.max(a,b)+' − '+Math.min(a,b);v=Math.abs(a-b)}}
+ else if(d==2){const a=rnd(3,12),b=rnd(3,12),c=rnd(5,40);e=a+' × '+b+' + '+c;v=a*b+c}
+ else if(d==3){const a=rnd(5,20),b=rnd(5,20),c=rnd(3,9),x=rnd(5,50);e='('+a+' + '+b+') × '+c+' − '+x;v=(a+b)*c-x}
+ else{const a=rnd(11,25),b=rnd(11,25),c=rnd(2,9),x=rnd(20,90);e=a+' × '+b+' − '+c+' × '+x;v=a*b-c*x}
+ return{tag:'حساب',q:ltr(e+' = ?'),...numOpts(v,d*4+4)}},
+seq(d){let a=[],v;
+ if(d==1){const s=rnd(1,20),k=rnd(2,9);for(let i=0;i<6;i++)a.push(s+k*i)}
+ else if(d==2){if(Math.random()<.5){const s=rnd(1,4),m=pick([2,3]);for(let i=0;i<6;i++)a.push(s*m**i)}else{const x=rnd(10,30),p=rnd(3,9),q=rnd(1,p-1);a=[x];for(let i=0;i<5;i++)a.push(a[i]+(i%2?-q:p))}}
+ else if(d==3){if(Math.random()<.5){const n=rnd(1,4);for(let i=0;i<6;i++)a.push((n+i)**2)}else{a=[rnd(1,5),rnd(2,7)];for(let i=2;i<6;i++)a.push(a[i-1]+a[i-2])}}
+ else{if(Math.random()<.5){const s=rnd(1,9),d0=rnd(1,4),inc=rnd(1,3);a=[s];for(let i=0;i<5;i++)a.push(a[i]+d0+inc*i)}else{const p=rnd(1,9),q=rnd(20,40),x=rnd(2,5),y=rnd(2,6);for(let i=0;i<6;i++)a.push(i%2?q+y*((i-1)/2):p+x*(i/2))}}
+ v=a.pop();return{tag:'أنماط',q:'كمّل السلسلة:'+ltr(a.join(' , ')+' , ?'),...numOpts(v,d*3+3)}},
+odd(d){let o,ans;
+ if(d<3){const pr=d==1?shuf(['فواكه','حيوانات','ألوان','مركبات','أدوات']).slice(0,2):pick([['فواكه','خضار'],['حيوانات','طيور'],['خضار','فواكه'],['طيور','حيوانات']]);
+  ans=pick(CATS[pr[1]]);o=shuf(CATS[pr[0]]).slice(0,3);o.push(ans);return{tag:'الغريب',q:'مين الكلمة الغريبة؟',...fin(shuf(o),ans)}}
+ let t=pick([0,1,2]);
+ if(t==0){const k=rnd(3,7);o=shuf([2,3,4,5,6,7,8,9,10,11,12]).slice(0,3).map(x=>x*k);do{ans=rnd(10,80)}while(ans%k==0||o.includes(ans));o.push(ans)}
+ else if(t==1){o=shuf([11,13,17,19,23,29,31,37,41,43]).slice(0,3);ans=pick([21,27,33,39,45,49,51,55]);o.push(ans)}
+ else{o=shuf([16,25,36,49,64,81,100,121]).slice(0,3);ans=pick([50,70,90,110]);o.push(ans)}
+ return{tag:'الغريب',q:'مين الرقم الغريب؟',...fin(shuf(o).map(String),String(ans)),od:'ltr'}},
+logic(d){const n=d<3?3:d<4?4:5,nm=shuf(['سارة','أحمد','منى','علي','ياسمين','عمر','نور','كريم']).slice(0,n),tall=Math.random()<.5,ans=tall?nm[0]:nm[n-1];
+ const st=shuf(nm.slice(1).map((x,i)=>nm[i]+' أطول من '+x));let o=nm.slice();
+ if(n==3)o.push('مش عارف أحدد');if(n==5){o=shuf(nm).slice(0,4);if(!o.includes(ans))o[0]=ans}
+ return{tag:'منطق',q:st.join('، ')+'.<br>مين الأ'+(tall?'طول':'قصر')+'؟',...fin(shuf(o),ans)}},
+count(d){const em=shuf(['🍎','🍌','🍇','🍒','🍋','🥝','🍓','🍉']),T=em[0],ot=em.slice(1,3+Math.min(d,2)),t=rnd(3,4+d*2),a=Array(t).fill(T);
+ while(a.length<12+d*5)a.push(pick(ot));
+ return{tag:'تركيز',q:'عدّ '+T+' في الصورة:<div class="grid">'+shuf(a).join('')+'</div>',...numOpts(t,3)}},
+mem(d){const n=d+3,a=Array.from({length:n},()=>rnd(0,9)),s=a.join(' '),set=new Set([s]);
+ while(set.size<4){const b=a.slice();for(let j=rnd(1,2);j>0;j--){const p=rnd(0,n-1);b[p]=(b[p]+rnd(1,9))%10}set.add(b.join(' '))}
+ const o=shuf([...set]);return{tag:'ذاكرة',mem:1200+n*650,q:'احفظ الأرقام دي:'+ltr(s),after:'كانت الأرقام إيه؟',opts:o,ans:o.indexOf(s),od:'ltr'}}
+};
+function fin(o,c){return{opts:o,ans:o.indexOf(c)}}
+
+
+const firebaseConfig={apiKey:"ضع_القيمة",authDomain:"ضع_القيمة",databaseURL:"ضع_القيمة",projectId:"ضع_القيمة",appId:"ضع_القيمة"};
+const CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+let db,au,uid,code,R,ref,T={qs:null,k:'',i:-1,iv:0,lock:true};
+const chip=(t,on,fn)=>'<button class="chip'+(on?' on':'')+'" onclick="'+fn+'">'+t+'</button>';
+const ls={get(){try{return localStorage.getItem('bq_name')||''}catch(e){return ''}},set(v){try{localStorage.setItem('bq_name',v)}catch(e){}}};
+function boot(){try{firebase.initializeApp(firebaseConfig);db=firebase.database();au=firebase.auth();
+ au.signInAnonymously().then(u=>{uid=u.user.uid;home()}).catch(fail)}catch(e){fail()}}
+function fail(){$('#app').innerHTML='<h1>🧠 تحدّي العقول</h1><p class="err">مقدرناش نتصل بـ Firebase. راجع firebaseConfig وفعّل الدخول المجهول (Anonymous) وقواعد قاعدة البيانات.</p>'}
+function home(msg){clearInterval(T.iv);if(ref){ref.off();ref=null}code=null;const q=new URLSearchParams(location.search).get('room')||'';
+ $('#app').innerHTML='<h1>🧠 تحدّي العقول</h1><p class="sub">العب أونلاين مع صحابك، كل واحد من موبايله.</p><h2>اسمك</h2><input id="nm" maxlength="12" placeholder="اسمك" value="'+esc(ls.get())+'"><div class="err" role="alert">'+(msg||'')+'</div><button class="big" onclick="create()">إنشاء غرفة جديدة</button><h2>أو ادخل غرفة</h2><input id="cd" maxlength="4" dir="ltr" placeholder="كود الغرفة" value="'+esc(q.toUpperCase())+'"><button class="big ghost" onclick="join()">دخول الغرفة</button>'}
+function getName(){const v=$('#nm').value.trim();if(!v){home('اكتب اسمك الأول');return null}ls.set(v);return v}
+function create(){const n=getName();if(!n)return;const c=Array.from({length:4},()=>CH[rnd(0,CH.length-1)]).join('');
+ db.ref('rooms/'+c).set({host:uid,status:'lobby',lvl:0,per:5,t:Date.now(),players:{[uid]:{name:n,s:0}}}).then(()=>listen(c)).catch(()=>home('فشل إنشاء الغرفة، راجع قواعد Firebase.'))}
+function join(){const n=getName();if(!n)return;const c=$('#cd').value.trim().toUpperCase();if(c.length!=4)return home('اكتب كود من 4 حروف');
+ db.ref('rooms/'+c).once('value').then(s=>{const r=s.val();if(!r)return home('الغرفة مش موجودة');const ps=r.players||{};
+  if(!ps[uid]){if(r.status!='lobby')return home('اللعب بدأ بالفعل');if(Object.keys(ps).length>=6)return home('الغرفة مليانة (6 لاعبين)')}
+  return db.ref('rooms/'+c+'/players/'+uid).set({name:n,s:ps[uid]?ps[uid].s:0}).then(()=>listen(c))}).catch(()=>home('فشل الدخول، جرّب تاني.'))}
+function listen(c){code=c;T.i=-1;ref=db.ref('rooms/'+c);ref.on('value',s=>{R=s.val();if(!R)return home('الغرفة اتقفلت');route()},()=>home('انقطع الاتصال'))}
+function route(){const st=R.status;
+ if(st=='lobby'){T.i=-1;clearInterval(T.iv);lobby()}
+ else if(st=='play'){if(R.i!==T.i){T.i=R.i;if(T.k!==R.qs){T.qs=JSON.parse(R.qs);T.k=R.qs}showQ()}else bd()}
+ else if(st=='done'){clearInterval(T.iv);T.i=-1;results()}}
+function lobby(){const ps=R.players||{},ids=Object.keys(ps),host=R.host===uid;
+ $('#app').innerHTML='<div class="center"><div class="meta">كود الغرفة</div><h1 style="letter-spacing:8px" dir="ltr">'+code+'</h1><button class="chip" onclick="cp()">انسخ رابط الدعوة</button></div><h2>اللاعبين ('+ids.length+' من 6)</h2>'+ids.map(i=>'<div class="rank"><span>'+esc(ps[i].name)+(i==R.host?' 👑':'')+(i==uid?' (أنت)':'')+'</span></div>').join('')+
+ (host?'<h2>المستوى</h2><div class="row">'+LB.map((l,k)=>chip(l,R.lvl==k,'setR(\'lvl\','+k+')')).join('')+'</div><h2>أسئلة لكل لاعب</h2><div class="row">'+[3,5,8].map(k=>chip(k,R.per==k,'setR(\'per\','+k+')')).join('')+'</div><button class="big" onclick="go()"'+(ids.length>1?'':' disabled')+'>ابدأ اللعب</button>'+(ids.length>1?'':'<p class="sub">استنى لاعب واحد على الأقل.</p>'):'<p class="sub">استنى المضيف يبدأ اللعب...</p><p class="sub">المستوى: '+LB[R.lvl]+'، أسئلة لكل لاعب: '+R.per+'</p>')+'<button class="big ghost" onclick="leave()">خروج</button>'}
+function setR(k,v){ref.child(k).set(v)}
+function cp(){const u=location.origin+location.pathname+'?room='+code;try{navigator.clipboard.writeText(u)}catch(e){prompt('انسخ الرابط',u)}}
+function leave(){const r=ref,h=R&&R.host===uid&&R.status=='lobby',st=R&&R.status;home();if(r){if(h)r.remove();else if(st=='lobby')r.child('players/'+uid).remove()}}
+function go(){const ids=shuf(Object.keys(R.players)),n=ids.length,tot=R.per*n,qs=[];let bag=[];
+ for(let i=0;i<tot;i++){if(!bag.length)bag=shuf(TYPES);const lv=R.lvl||Math.min(4,1+Math.floor(i*4/tot));const q=G[bag.pop()](lv);q.lv=lv;qs.push(q)}
+ const u={status:'play',order:ids,qs:JSON.stringify(qs),i:0,tot,last:''};ids.forEach(id=>{u['players/'+id+'/s']=0});ref.update(u)}
+function bd(){const ps=R.players,cur=R.order[R.i%R.order.length],h='<div class="board">'+R.order.map(id=>'<div class="pl'+(id==cur?' me':'')+'">'+esc(ps[id]?ps[id].name:'؟')+'<b>'+(ps[id]?ps[id].s:0)+'</b></div>').join('')+'</div>',e=$('#bd');if(e)e.innerHTML=h;return h}
+function showQ(){clearInterval(T.iv);const q=T.qs[R.i],cur=R.order[R.i%R.order.length],mine=cur==uid,ps=R.players;T.lock=true;
+ $('#app').innerHTML='<div id="bd">'+bd()+'</div>'+(R.last?'<p class="sub">'+esc(R.last)+'</p>':'')+'<div class="card"><div class="meta">سؤال '+(R.i+1)+' من '+R.tot+'، '+q.tag+'، مستوى '+LB[q.lv]+'</div><div class="meta"><b>'+(mine?'دورك!':'دور '+esc(ps[cur]?ps[cur].name:'؟'))+'</b></div><div class="q" id="qb">'+q.q+'</div><div class="bar"><i id="bar"></i></div><div class="opts" id="opts"></div><div id="fb"></div></div>';
+ if(!mine&&R.host===uid)$('#fb').innerHTML='<button class="big ghost" onclick="skip()">تخطي السؤال (لو اللاعب مش بيرد)</button>';
+ if(q.mem){$('#bar').style.width='0';const i0=R.i;setTimeout(()=>{if(T.i!==i0||!$('#qb'))return;$('#qb').textContent=q.after;opts(q,mine)},q.mem)}else opts(q,mine)}
+function opts(q,mine){const T0=q.mem?15:20;
+ $('#opts').innerHTML=q.opts.map((o,k)=>'<button class="opt" '+(q.od?'dir="'+q.od+'" ':'')+(mine?'onclick="answer('+k+')"':'disabled')+'>'+o+'</button>').join('');
+ if(!mine)return;T.lock=false;T.end=Date.now()+T0*1000;
+ T.iv=setInterval(()=>{const l=(T.end-Date.now())/1000;$('#bar').style.width=Math.max(0,l/T0*100)+'%';if(l<=0)answer(-1)},100)}
+function answer(k){if(T.lock)return;T.lock=true;clearInterval(T.iv);const q=T.qs[R.i],left=Math.max(0,Math.round((T.end-Date.now())/1000)),ok=k===q.ans,pts=ok?(10+left)*q.lv:0;T.pts=pts;T.ok=ok;
+ document.querySelectorAll('.opt').forEach((b,j)=>{if(j==q.ans)b.classList.add('ok');else if(j==k)b.classList.add('no')});
+ $('#fb').innerHTML='<div class="fb" style="color:'+(ok?'var(--g)':'var(--c)')+'">'+(ok?'صح! +'+pts:k<0?'خلص الوقت':'غلط')+'</div><button class="big" onclick="nextQ()">'+(R.i+1>=R.tot?'شوف النتيجة':'التالي')+'</button>'}
+function nextQ(){const me=R.players[uid],u={i:R.i+1,last:me.name+(T.ok?' جاوب صح +'+T.pts:' ما جاوبش صح'),status:R.i+1>=R.tot?'done':'play'};u['players/'+uid+'/s']=me.s+T.pts;ref.update(u)}
+function skip(){ref.update({i:R.i+1,last:'السؤال اتخطى',status:R.i+1>=R.tot?'done':'play'})}
+function results(){const ps=R.players||{},r=Object.keys(ps).map(id=>({id,n:ps[id].name,s:ps[id].s||0})).sort((a,b)=>b.s-a.s),top=r.filter(p=>p.s==r[0].s);
+ $('#app').innerHTML='<div class="center"><p class="win">🏆</p><h1>'+(top.length>1?'تعادل!':esc(r[0].n)+' كسب!')+'</h1></div>'+r.map((p,k)=>'<div class="rank"><span>'+(k+1)+'. '+esc(p.n)+(p.id==uid?' (أنت)':'')+'</span><span>'+p.s+'</span></div>').join('')+(R.host===uid?'<button class="big" onclick="ref.update({status:\'lobby\'})">لعبة جديدة بأسئلة جديدة</button>':'<p class="sub">استنى المضيف يبدأ لعبة جديدة.</p>')+'<button class="big ghost" onclick="leave()">خروج</button>'}
+boot();
+</script>
+</body>
+</html>
